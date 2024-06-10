@@ -1,5 +1,7 @@
 use core::fmt;
 
+pub mod fulfillment;
+pub mod order;
 pub mod product;
 
 #[derive(Debug)]
