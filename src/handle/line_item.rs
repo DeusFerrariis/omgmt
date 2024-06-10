@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use log::{error, warn};
+use log::warn;
 use serde::{Deserialize, Serialize};
 
 use crate::{
