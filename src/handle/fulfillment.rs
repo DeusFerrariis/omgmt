@@ -1,11 +1,7 @@
-use crate::model::{
-    self, FulfillmentDetails, FulfillmentStatus, FulfillmentType, ProductDetails, ToRecord,
-};
-use crate::service;
+use crate::model::{self, FulfillmentStatus, FulfillmentType, ToRecord};
 use crate::service::fulfillment::FulfillmentService;
 use axum::extract::Path;
-use axum::{extract::State, http::StatusCode, Json, Router};
-use log::error;
+use axum::{extract::State, http::StatusCode, Json};
 use serde::{Deserialize, Serialize};
 
 pub struct FulfillmentHandler;

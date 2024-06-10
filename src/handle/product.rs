@@ -1,9 +1,9 @@
-use crate::model::{self, ProductDetails, ToRecord};
+use crate::model::{self, ToRecord};
 use crate::service;
 use crate::service::product::ProductService;
 use axum::extract::Path;
-use axum::{extract::State, http::StatusCode, Json, Router};
-use serde::{Deserialize, Serialize};
+use axum::Json;
+use axum::{extract::State, http::StatusCode};
 
 pub struct ProductHandler;
 

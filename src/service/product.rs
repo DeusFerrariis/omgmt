@@ -1,7 +1,4 @@
-use log::error;
 use log::warn;
-use sqlx::sqlite::SqliteRow;
-use sqlx::Acquire;
 use sqlx::Row;
 
 use crate::{

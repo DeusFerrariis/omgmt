@@ -1,4 +1,4 @@
-use sqlx::{Connection, Pool, Sqlite, SqliteConnection, SqlitePool};
+use sqlx::{Pool, Sqlite, SqlitePool};
 
 #[derive(Clone, Debug)]
 pub struct SqliteProvider {
@@ -11,12 +11,8 @@ impl SqliteProvider {
         Ok(Self { connection: conn })
     }
 
-    pub async fn new(url: &str) -> Result<Self, sqlx::Error> {
-        let conn = SqlitePool::connect(url).await?;
-        Ok(Self { connection: conn })
-    }
-}
-
-impl super::Provider for SqliteProvider {
-    type Error = ();
+    // pub async fn new(url: &str) -> Result<Self, sqlx::Error> {
+    //     let conn = SqlitePool::connect(url).await?;
+    //     Ok(Self { connection: conn })
+    // }
 }

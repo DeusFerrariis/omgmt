@@ -1,11 +1,8 @@
 use std::fmt::Display;
 
-use sqlx::{query, Acquire};
+use sqlx::query;
 
-use crate::{
-    model::{self, FulfillmentDetails},
-    provider::SqliteProvider,
-};
+use crate::{model, provider::SqliteProvider};
 
 pub trait FulfillmentService {
     type Error: Display;
