@@ -1,5 +1,7 @@
 use core::fmt;
 
+use axum::http::StatusCode;
+
 pub mod fulfillment;
 pub mod line_item;
 pub mod order;
@@ -15,9 +17,9 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
-            Self::BadInput(s) => format!("Bad input: {}", s),
-            Self::ProductNotFound(s) => format!("Product not found: {}", s),
-            Self::ProviderFailure(s) => format!("Provider error: {}", s),
+            Self::BadInput(s) => format!("Bad input - {}", s),
+            Self::ProductNotFound(s) => format!("Product not found - {}", s),
+            Self::ProviderFailure(s) => format!("Provider error - {}", s),
         };
 
         write!(f, "{}", message)
@@ -32,3 +34,15 @@ impl From<sqlx::Error> for Error {
         }
     }
 }
+
+impl Into<StatusCode> for Error {
+    fn into(self) -> StatusCode {
+        match self {
+            Error::BadInput(_) => StatusCode::BAD_REQUEST,
+            Error::ProductNotFound(_) => StatusCode::NOT_FOUND,
+            Error::ProviderFailure(_) => StatusCode::INTERNAL_SERVER_ERROR,
+        }
+    }
+}
+
+// TODO: set up error for (StatusCode, String or Json(ErrorMessage))

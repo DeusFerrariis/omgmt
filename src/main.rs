@@ -2,6 +2,7 @@ use axum::{
     routing::{get, post, put},
     Router,
 };
+use log::info;
 use provider::SqliteProvider;
 use service::{
     fulfillment::FulfillmentService, line_item::LineItemService, product::ProductService,
@@ -56,5 +57,6 @@ async fn main() {
         .with_state(sqlite_provider);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
+    info!("Listening on :3000...");
     axum::serve(listener, app).await.unwrap();
 }

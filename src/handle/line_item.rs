@@ -1,5 +1,5 @@
 use axum::{extract::State, http::StatusCode, Json};
-use log::error;
+use log::{error, warn};
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -39,8 +39,9 @@ impl LineItemHandler {
                 ),
             )),
             Err(e) => {
-                error!("error creating line item: {}", e);
-                Err(StatusCode::INTERNAL_SERVER_ERROR)
+                warn!("{}", e);
+                warn!("error creating line item");
+                Err(e.into())
             }
         }
     }

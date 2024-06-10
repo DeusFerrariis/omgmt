@@ -1,5 +1,4 @@
 use crate::model::{self, ToRecord};
-use crate::service;
 use crate::service::product::ProductService;
 use axum::extract::Path;
 use axum::Json;
@@ -33,15 +32,6 @@ impl ProductHandler {
             Ok(record) => Ok((StatusCode::OK, Json(record))),
             // FIXME: handle abstract error type 400 errors not covered
             Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
-        }
-    }
-}
-
-impl From<service::Error> for StatusCode {
-    fn from(value: service::Error) -> Self {
-        match value {
-            service::Error::ProductNotFound(_) => StatusCode::NOT_FOUND,
-            _ => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
