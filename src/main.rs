@@ -3,17 +3,21 @@ use axum::{
     Router,
 };
 use provider::SqliteProvider;
-use service::{fulfillment::FulfillmentService, product::ProductService};
+use service::{
+    fulfillment::FulfillmentService, line_item::LineItemService, product::ProductService,
+};
 
 mod handle;
 mod model;
 mod provider;
 mod service;
 
-use handle::{fulfillment, product};
+use handle::{fulfillment, line_item, product};
 
 #[tokio::main]
 async fn main() {
+    env_logger::init();
+
     let mut sqlite_provider = provider::SqliteProvider::new_memory().await.unwrap();
 
     // Init provider for each backend
@@ -22,6 +26,9 @@ async fn main() {
         .await
         .unwrap();
     ProductService::init_provider(&mut sqlite_provider)
+        .await
+        .unwrap();
+    LineItemService::init_provider(&mut sqlite_provider)
         .await
         .unwrap();
 
@@ -41,6 +48,10 @@ async fn main() {
         .route(
             "/fulfillment/:fulfillment_id/status",
             put(fulfillment::FulfillmentHandler::update_fulfillment_status::<SqliteProvider>),
+        )
+        .route(
+            "/lineItem",
+            post(line_item::LineItemHandler::create_line_item::<SqliteProvider>),
         )
         .with_state(sqlite_provider);
 

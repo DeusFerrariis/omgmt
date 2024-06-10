@@ -93,7 +93,7 @@ impl FulfillmentService for SqliteProvider {
             0 => Err(super::Error::BadInput(
                 "bad fulfillment status transition".to_string(),
             )),
-            n => Err(super::Error::ProviderError(format!(
+            n => Err(super::Error::ProviderFailure(format!(
                 "{} rows affected, expected 1 or 0",
                 n
             ))),

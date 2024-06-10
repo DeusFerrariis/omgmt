@@ -9,11 +9,7 @@ use crate::{
 pub trait ProductService {
     type Error;
     async fn init_provider(&mut self) -> Result<(), Self::Error>;
-    async fn create_product(
-        &mut self,
-        sku: &String,
-        description: &String,
-    ) -> Result<i64, Self::Error>;
+    async fn create_product(&mut self, sku: &str, description: &str) -> Result<i64, Self::Error>;
     async fn get_product(
         &mut self,
         id: &i64,
@@ -37,11 +33,7 @@ impl ProductService for SqliteProvider {
         .await?;
         Ok(())
     }
-    async fn create_product(
-        &mut self,
-        sku: &String,
-        description: &String,
-    ) -> Result<i64, Self::Error> {
+    async fn create_product(&mut self, sku: &str, description: &str) -> Result<i64, Self::Error> {
         let mut conn = self.connection.acquire().await?;
         let result = sqlx::query(
             r#"

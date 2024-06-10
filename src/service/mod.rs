@@ -1,6 +1,7 @@
 use core::fmt;
 
 pub mod fulfillment;
+pub mod line_item;
 pub mod order;
 pub mod product;
 
@@ -8,7 +9,7 @@ pub mod product;
 pub enum Error {
     BadInput(String),
     ProductNotFound(String),
-    ProviderError(String),
+    ProviderFailure(String),
 }
 
 impl fmt::Display for Error {
@@ -16,7 +17,7 @@ impl fmt::Display for Error {
         let message = match self {
             Self::BadInput(s) => format!("Bad input: {}", s),
             Self::ProductNotFound(s) => format!("Product not found: {}", s),
-            Self::ProviderError(s) => format!("Provider error: {}", s),
+            Self::ProviderFailure(s) => format!("Provider error: {}", s),
         };
 
         write!(f, "{}", message)
@@ -27,7 +28,7 @@ impl From<sqlx::Error> for Error {
     fn from(value: sqlx::Error) -> Self {
         match value {
             sqlx::Error::RowNotFound => Self::BadInput("sql row not found".to_string()),
-            v => Self::ProviderError(format!("{}", v)),
+            v => Self::ProviderFailure(format!("{}", v)),
         }
     }
 }

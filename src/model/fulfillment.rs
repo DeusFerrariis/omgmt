@@ -1,51 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-// TODO: break this up by service
-
-// Helpers / Utils
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct Record<T> {
-    pub id: i64,
-    #[serde(flatten)]
-    pub data: T,
-}
-
-pub trait ToRecord: Sized + Clone {
-    fn to_record(&self, id: i64) -> Record<Self> {
-        Record {
-            id,
-            data: self.clone(),
-        }
-    }
-}
-
-// PRODUCT
-
-impl ToRecord for ProductDetails {}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct ProductDetails {
-    pub sku: String,
-    pub description: String,
-}
-
-// ORDER
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct OrderDetails {
-    status: OrderStatus,
-}
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub enum OrderStatus {
-    // NOTE: this may be expounded on or converted to an emergent property
-    Quote,
-    Sold,
-    Done,
-}
-
-// FULFILLMENT
+use super::ToRecord;
 
 impl ToRecord for FulfillmentDetails {}
 
@@ -90,12 +45,4 @@ pub enum FulfillmentStatus {
     Initialized,
     InProgress,
     Fulfilled,
-}
-
-// LINE ITEM
-
-#[derive(Clone, Debug, Deserialize, Serialize)]
-pub struct LineItem {
-    product_id: i64,
-    quantity: i64,
 }
