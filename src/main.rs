@@ -14,6 +14,7 @@ mod provider;
 mod service;
 
 use handle::{fulfillment, line_item, product};
+use tower_http::cors::CorsLayer;
 
 #[tokio::main]
 async fn main() {
@@ -54,9 +55,10 @@ async fn main() {
             "/lineItem",
             post(line_item::LineItemHandler::create_line_item::<SqliteProvider>),
         )
-        .with_state(sqlite_provider);
+        .with_state(sqlite_provider)
+        .layer(CorsLayer::permissive());
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
-    info!("Listening on :3000...");
+    info!("Listening on :3000...error");
     axum::serve(listener, app).await.unwrap();
 }
