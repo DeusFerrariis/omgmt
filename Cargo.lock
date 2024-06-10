@@ -820,6 +820,7 @@ name = "omgmt"
 version = "0.1.0"
 dependencies = [
  "axum",
+ "log",
  "serde",
  "sqlx",
  "tokio",

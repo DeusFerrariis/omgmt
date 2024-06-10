@@ -1,10 +1,16 @@
-use axum::{routing::post, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use provider::SqliteProvider;
 use service::product::ProductService;
 
 mod handle;
+mod model;
 mod provider;
 mod service;
+
+use handle::product;
 
 #[tokio::main]
 async fn main() {
@@ -12,7 +18,14 @@ async fn main() {
     sqlite_provider.init_provider().await.unwrap();
 
     let app: Router<()> = Router::new()
-        .route("/product", post(handle::create_product::<SqliteProvider>))
+        .route(
+            "/product",
+            post(product::ProductHandler::create_product::<SqliteProvider>),
+        )
+        .route(
+            "/product/:product_id",
+            get(product::ProductHandler::get_product::<SqliteProvider>),
+        )
         .with_state(sqlite_provider);
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3000").await.unwrap();
