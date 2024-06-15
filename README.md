@@ -1,4 +1,4 @@
-<a href="https://idx.google.com/import?url=">
+<a href="https://idx.google.com/import?url=https://github.com/DeusFerrariis/omgmt">
   <picture>
     <source
       media="(prefers-color-scheme: dark)"
