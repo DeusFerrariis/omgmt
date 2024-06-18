@@ -9,7 +9,7 @@
     # pkgs.python311Packages.pip
     # pkgs.nodejs_20
     # pkgs.nodePackages.nodemon
-    #pkgs.rustup
+    pkgs.rustup
   ];
 
   # Sets environment variables in the workspace
@@ -17,7 +17,8 @@
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [
-      # "vscodevim.vim"
+      "vscodevim.vim"
+      "mvllow.rose-pine"
     ];
 
     # Enable previews
