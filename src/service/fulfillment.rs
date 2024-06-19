@@ -19,7 +19,7 @@ pub trait FulfillmentService {
     ) -> Result<(), Self::Error>;
 }
 
-const CREATE_FULFILLMENT_TABLE_SQL: &str = r#"
+pub const CREATE_FULFILLMENT_TABLE_SQL: &str = r#"
     CREATE TABLE IF NOT EXISTS fulfillments (
         id INTEGER NOT NULL UNIQUE PRIMARY KEY,
         fulfillmentStatus TEXT NOT NULL,

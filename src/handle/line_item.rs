@@ -1,4 +1,8 @@
-use axum::{extract::State, http::StatusCode, Json};
+use axum::{
+    extract::{Path, State},
+    http::StatusCode,
+    Json,
+};
 use log::warn;
 use serde::{Deserialize, Serialize};
 
@@ -34,6 +38,7 @@ impl LineItemHandler {
                         product_id: payload.product_id,
                         quantity: payload.quantity,
                         quantity_fulfilled: 0,
+                        fulfillment_id: payload.fulfillment_id,
                     }
                     .to_record(id),
                 ),
@@ -41,6 +46,21 @@ impl LineItemHandler {
             Err(e) => {
                 warn!("{}", e);
                 warn!("error creating line item");
+                Err(e.into())
+            }
+        }
+    }
+
+    pub async fn get_line_item<T: LineItemService>(
+        State(mut service): State<T>,
+        Path(line_item_id): Path<i64>,
+    ) -> JsonResult<model::Record<model::LineItemDetails>> {
+        match service.get_line_item(line_item_id).await {
+            Ok(Some(record)) => Ok((StatusCode::OK, Json(record))),
+            Ok(None) => Err(StatusCode::NOT_FOUND),
+            Err(e) => {
+                warn!("{}", e);
+                warn!("error getting line item");
                 Err(e.into())
             }
         }
