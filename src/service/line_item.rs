@@ -277,7 +277,7 @@ mod test {
                 .await
                 .unwrap();
 
-            for x in 0..2 {
+            for _ in 0..2 {
                 sqlx::query(super::sql_stmt::INSERT_LINE_ITEM)
                     .bind(1)
                     .bind(1)

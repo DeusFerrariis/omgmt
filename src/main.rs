@@ -55,6 +55,10 @@ async fn main() {
             "/lineItem",
             post(line_item::LineItemHandler::create_line_item::<SqliteProvider>),
         )
+        .route(
+            "/fulfillment/:fulfillment_id/lineItems",
+            get(line_item::LineItemHandler::get_line_item_by_fulfillment_id::<SqliteProvider>),
+        )
         .with_state(sqlite_provider)
         .layer(CorsLayer::permissive());
 

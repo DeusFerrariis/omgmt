@@ -66,5 +66,20 @@ impl LineItemHandler {
         }
     }
 
-    // TODO: add method for /fulfillment_id/line_items
+    pub async fn get_line_item_by_fulfillment_id<T: LineItemService>(
+        State(mut service): State<T>,
+        Path(fulfillment_id): Path<i64>,
+    ) -> JsonResult<Vec<model::Record<model::LineItemDetails>>> {
+        match service
+            .get_line_items_by_fulfillment_id(fulfillment_id)
+            .await
+        {
+            Ok(items) => Ok((StatusCode::OK, Json(items))),
+            Err(e) => {
+                warn!("{}", e);
+                warn!("error getting line items for fulfillment");
+                Err(e.into())
+            }
+        }
+    }
 }
