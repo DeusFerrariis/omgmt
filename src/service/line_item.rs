@@ -1,8 +1,9 @@
-use crate::model::ToRecord;
+use crate::model::{LineItemDetails, ToRecord};
 
 use std::fmt::Display;
 
 use axum::http::StatusCode;
+use futures::TryStreamExt;
 use log::warn;
 use sqlx::Row;
 
@@ -24,13 +25,19 @@ pub trait LineItemService {
         &mut self,
         line_item_id: i64,
     ) -> Result<Option<model::Record<model::LineItemDetails>>, Self::Error>;
+
+    async fn get_line_items_by_fulfillment_id(
+        &mut self,
+        fulfillment_id: i64,
+    ) -> Result<Vec<model::Record<model::LineItemDetails>>, Self::Error>;
 }
 
 impl LineItemService for SqliteProvider {
     type Error = super::Error;
 
     async fn init_provider(&mut self) -> Result<(), Self::Error> {
-        let mut conn = self.connection.acquire().await?;
+        let pool_connection = self.connection.acquire().await?;
+        let mut conn = pool_connection;
 
         let _result = sqlx::query(sql_stmt::CREATE_TABLE)
             .execute(&mut *conn)
@@ -90,6 +97,33 @@ impl LineItemService for SqliteProvider {
 
         Ok(Some(record))
     }
+
+    async fn get_line_items_by_fulfillment_id(
+        &mut self,
+        fulfillment_id: i64,
+    ) -> Result<Vec<model::Record<model::LineItemDetails>>, Self::Error> {
+        let mut conn = self.connection.acquire().await?;
+
+        let mut rows = sqlx::query(sql_stmt::SELECT_BY_FULFILLMENT_ID)
+            .bind(fulfillment_id)
+            .fetch(&mut *conn);
+
+        let mut records: Vec<model::Record<model::LineItemDetails>> = Vec::new();
+
+        while let Some(row) = rows.try_next().await? {
+            records.push(
+                LineItemDetails {
+                    product_id: row.try_get("productId")?,
+                    fulfillment_id: row.try_get("fulfillmentId")?,
+                    quantity: row.try_get("quantity")?,
+                    quantity_fulfilled: 0,
+                }
+                .to_record(row.try_get("id")?),
+            );
+        }
+
+        Ok(records)
+    }
 }
 
 mod sql_stmt {
@@ -114,6 +148,10 @@ mod sql_stmt {
             FROM fulfillments
             WHERE id = $1 AND fulfillmentStatus = 'New'
         );
+    "#;
+
+    pub const SELECT_BY_FULFILLMENT_ID: &str = r#"
+        SELECT id, fulfillmentId, productId, quantity FROM lineItems WHERE fulfillmentId=$1;
     "#;
 }
 
@@ -171,23 +209,36 @@ mod test_create_line_item {
 
 #[cfg(test)]
 mod test {
-    use crate::{model, provider::SqliteProvider, service::line_item::LineItemService};
+    use std::any::Any;
+
+    use sqlx::Acquire;
+
+    use crate::{
+        model,
+        provider::{self, SqliteProvider},
+        service::line_item::LineItemService,
+    };
+
+    async fn create_tables(provider: &mut SqliteProvider) {
+        let mut conn = provider.connection.acquire().await.unwrap();
+        sqlx::query(crate::service::fulfillment::CREATE_FULFILLMENT_TABLE_SQL)
+            .execute(&mut *conn)
+            .await
+            .unwrap();
+        sqlx::query(super::sql_stmt::CREATE_TABLE)
+            .execute(&mut *conn)
+            .await
+            .unwrap();
+    }
 
     #[tokio::test]
     async fn test_get_line_item() {
         let mut provider = SqliteProvider::new_memory().await.unwrap();
+        let _ = create_tables(&mut provider).await;
 
-        {
+        let _db_init: () = {
             let mut conn = provider.connection.acquire().await.unwrap();
 
-            sqlx::query(crate::service::fulfillment::CREATE_FULFILLMENT_TABLE_SQL)
-                .execute(&mut *conn)
-                .await
-                .unwrap();
-            sqlx::query(super::sql_stmt::CREATE_TABLE)
-                .execute(&mut *conn)
-                .await
-                .unwrap();
             sqlx::query(r#"INSERT INTO fulfillments VALUES( NULL, ?1, ?2 );"#)
                 .bind(String::from(model::FulfillmentStatus::New))
                 .bind(String::from(model::FulfillmentType::StockPickUp))
@@ -201,13 +252,49 @@ mod test {
                 .execute(&mut *conn)
                 .await
                 .unwrap();
-        }
+        };
 
         match provider.get_line_item(1).await {
             Ok(_model) => {}
             Err(e) => {
                 panic!("expected ok got {:?}", e);
             }
+        };
+    }
+
+    #[tokio::test]
+    async fn test_get_line_items_by_fullfillment_id() {
+        let mut provider = SqliteProvider::new_memory().await.unwrap();
+        let _ = create_tables(&mut provider).await;
+
+        let _db_init: () = {
+            let mut conn = provider.connection.acquire().await.unwrap();
+
+            sqlx::query(r#"INSERT INTO fulfillments VALUES ( NULL, ?1, ?2 );"#)
+                .bind(String::from(model::FulfillmentStatus::New))
+                .bind(String::from(model::FulfillmentType::StockPickUp))
+                .execute(&mut *conn)
+                .await
+                .unwrap();
+
+            for x in 0..2 {
+                sqlx::query(super::sql_stmt::INSERT_LINE_ITEM)
+                    .bind(1)
+                    .bind(1)
+                    .bind(1)
+                    .execute(&mut *conn)
+                    .await
+                    .unwrap();
+            }
+        };
+
+        match provider.get_line_items_by_fulfillment_id(1).await {
+            Ok(records) => {
+                assert_eq!(records.len(), 2);
+                assert_eq!(records[0].id, 1);
+                assert_eq!(records[1].id, 2);
+            }
+            Err(e) => panic!("expected ok got {:?}", e),
         };
     }
 }

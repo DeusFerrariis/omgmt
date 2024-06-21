@@ -1392,6 +1392,7 @@ dependencies = [
  "axum 0.7.5",
  "axum-util",
  "env_logger",
+ "futures",
  "log",
  "serde",
  "sqlx",

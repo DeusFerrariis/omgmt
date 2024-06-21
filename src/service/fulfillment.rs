@@ -8,10 +8,12 @@ pub trait FulfillmentService {
     type Error: Display;
 
     async fn init_provider(&mut self) -> Result<(), Self::Error>;
+
     async fn create_fulfillment(
         &mut self,
         fulfillment_type: model::FulfillmentType,
     ) -> Result<i64, Self::Error>;
+
     async fn set_fulfillment_status(
         &mut self,
         fulfillment_id: &i64,
